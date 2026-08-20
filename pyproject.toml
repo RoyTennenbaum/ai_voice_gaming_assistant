@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.scripts]
-init_db = "ai_voice_gaming_assistant.db:init_db"
+ingest = "ai_voice_gaming_assistant.ingest:main"
 app = "ai_voice_gaming_assistant.app:main"
 
 [build-system]
