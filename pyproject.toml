@@ -4,4 +4,15 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "google-genai>=2.18.1",
+    "httpx>=0.28.1",
+]
+
+[project.scripts]
+init_db = "ai_voice_gaming_assistant.db:init_db"
+app = "ai_voice_gaming_assistant.app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
