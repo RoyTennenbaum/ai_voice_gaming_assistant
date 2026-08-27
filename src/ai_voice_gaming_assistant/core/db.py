@@ -1,3 +1,4 @@
+# Async SQLite connection management and schema setup
 import sqlite3
 from pathlib import Path
 

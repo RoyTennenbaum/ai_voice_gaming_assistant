@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from typing import Generator
 
-from ai_voice_gaming_assistant import db
+from ai_voice_gaming_assistant.core import db
 
 
 @pytest.fixture

@@ -1,0 +1,1 @@
+# Settings, paths, API keys, and voice persona (e.g., "sage") payload configuration

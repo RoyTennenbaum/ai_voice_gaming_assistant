@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-from ai_voice_gaming_assistant import db
+from ai_voice_gaming_assistant.core import db
 
 
 def test_get_connection(temp_db_path: Path):

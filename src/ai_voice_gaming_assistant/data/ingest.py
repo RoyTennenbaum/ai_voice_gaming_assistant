@@ -1,4 +1,5 @@
-from ai_voice_gaming_assistant.db import get_connection, init_db
+# Pipeline script orchestrating database population and vector chunking
+from ai_voice_gaming_assistant.core.db import get_connection, init_db
 import httpx
 
 ALL_ITEMS_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/All.json"

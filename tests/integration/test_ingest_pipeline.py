@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
-from ai_voice_gaming_assistant import db, ingest
+from ai_voice_gaming_assistant.core import db
+from ai_voice_gaming_assistant.data import ingest
 
 
 def test_full_ingest_and_search_flow(temp_db_path, sample_items):

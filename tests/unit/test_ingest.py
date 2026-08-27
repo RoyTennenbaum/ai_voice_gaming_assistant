@@ -2,7 +2,8 @@ from unittest.mock import MagicMock, patch
 import httpx
 import pytest
 
-from ai_voice_gaming_assistant import db, ingest
+from ai_voice_gaming_assistant.core import db
+from ai_voice_gaming_assistant.data import ingest
 
 
 def test_fetch_and_store_items_success(initialized_db, sample_items):
@@ -61,8 +62,8 @@ def test_fetch_and_store_items_http_error(initialized_db):
 
 def test_main_runs_init_and_fetch():
     """Test that main() invokes init_db and fetch_and_store_items."""
-    with patch("ai_voice_gaming_assistant.ingest.init_db") as mock_init, \
-         patch("ai_voice_gaming_assistant.ingest.fetch_and_store_items") as mock_fetch:
+    with patch("ai_voice_gaming_assistant.data.ingest.init_db") as mock_init, \
+         patch("ai_voice_gaming_assistant.data.ingest.fetch_and_store_items") as mock_fetch:
         ingest.main()
         mock_init.assert_called_once()
         mock_fetch.assert_called_once()
