@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.scripts]
-ingest = "ai_voice_gaming_assistant.ingest:main"
+ingest = "ai_voice_gaming_assistant.data.ingest:main"
 app = "ai_voice_gaming_assistant.app:main"
 
 [build-system]

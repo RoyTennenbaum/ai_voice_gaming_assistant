@@ -1,18 +1,16 @@
 # Pipeline script orchestrating database population and vector chunking
+from typing import Any
+
 from ai_voice_gaming_assistant.core.db import get_connection, init_db
-import httpx
+from ai_voice_gaming_assistant.data.wfcd_client import ALL_ITEMS_URL, fetch_items
 
-ALL_ITEMS_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/refs/heads/master/data/json/All.json"
 
-def fetch_and_store_items() -> None:
-    response = httpx.get(ALL_ITEMS_URL)
-
-    response.raise_for_status()
-
-    items = response.json()
-
+def store_items(items: list[dict[str, Any]]) -> None:
     conn = get_connection()
     cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM items")
+    cursor.execute("DELETE FROM items_fts")
 
     for item in items:
         item_id = item.get("uniqueName", "")
@@ -23,7 +21,7 @@ def fetch_and_store_items() -> None:
         if name and item_id:
             cursor.execute(
                 """
-                INSERT OR REPLACE INTO items (id, name, category, description)
+                INSERT INTO items (id, name, category, description)
                 VALUES (?, ?, ?, ?)
                 """,
                 (item_id, name, category, description),
@@ -39,9 +37,16 @@ def fetch_and_store_items() -> None:
     conn.commit()
     conn.close()
 
+
+def fetch_and_store_items() -> None:
+    items = fetch_items()
+    store_items(items)
+
+
 def main() -> None:
     init_db()
     fetch_and_store_items()
+
 
 if __name__ == "__main__":
     main()
