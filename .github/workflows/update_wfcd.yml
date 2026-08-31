@@ -1,0 +1,59 @@
+name: Update WFCD Data
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          
+      - name: Update submodules
+        id: update
+        run: |
+          git submodule update --remote
+          if [ -n "$(git status --porcelain data/warframe-items data/warframe-drop-data)" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Install uv
+        if: steps.update.outputs.changes == 'true' || github.event_name == 'workflow_dispatch'
+        uses: astral-sh/setup-uv@v2
+        
+      - name: Setup Python
+        if: steps.update.outputs.changes == 'true' || github.event_name == 'workflow_dispatch'
+        run: uv python install
+        
+      - name: Install dependencies
+        if: steps.update.outputs.changes == 'true' || github.event_name == 'workflow_dispatch'
+        run: uv sync
+        
+      - name: Run DB Ingest
+        if: steps.update.outputs.changes == 'true' || github.event_name == 'workflow_dispatch'
+        run: uv run python -m ai_voice_gaming_assistant.data.ingest
+        
+      - name: Commit and Push
+        if: steps.update.outputs.changes == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/warframe-items data/warframe-drop-data warframe.db
+          
+          # Only commit if there are changes
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Auto-update WFCD data and warframe.db"
+            git push
+          else
+            echo "No changes to commit"
+          fi

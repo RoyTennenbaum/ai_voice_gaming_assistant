@@ -1,0 +1,6 @@
+[submodule "data/warframe-items"]
+	path = data/warframe-items
+	url = https://github.com/WFCD/warframe-items
+[submodule "data/warframe-drop-data"]
+	path = data/warframe-drop-data
+	url = https://github.com/WFCD/warframe-drop-data
