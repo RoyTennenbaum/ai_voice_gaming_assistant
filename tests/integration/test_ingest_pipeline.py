@@ -1,21 +1,19 @@
-from unittest.mock import MagicMock, patch
-
 from ai_voice_gaming_assistant.core import db
 from ai_voice_gaming_assistant.data import ingest
 
 
 def test_full_ingest_and_search_flow(temp_db_path, sample_items):
-    """Test the complete workflow: init_db -> fetch_and_store_items -> search."""
-    mock_response = MagicMock()
-    mock_response.json.return_value = sample_items
-    mock_response.raise_for_status.return_value = None
-
-    # Initialize database
+    """Test the complete workflow: init_db -> store_items -> store_drop_data -> search."""
     db.init_db()
 
-    # Ingest data (with mocked HTTP response)
-    with patch("httpx.get", return_value=mock_response):
-        ingest.fetch_and_store_items()
+    # Ingest items
+    ingest.store_items(sample_items)
+
+    # Ingest drops
+    drops = [
+        {"item": "Alloy Plate", "place": "Earth/Cambria (Spy)", "rarity": "Common", "chance": 25.0},
+    ]
+    ingest.store_drop_data(drops, items=sample_items)
 
     # Connect and perform FTS search
     conn = db.get_connection()
@@ -33,21 +31,22 @@ def test_full_ingest_and_search_flow(temp_db_path, sample_items):
     item = cursor.fetchone()
     assert item == ("Alloy Plate", "Resources")
 
+    # Verify drops were ingested with correct item_id linkage
+    cursor.execute("SELECT item_id, item, place FROM drops WHERE item = ?", ("Alloy Plate",))
+    drop = cursor.fetchone()
+    assert drop[0] == "/Lotus/Types/Items/MiscItems/AlloyPlate"
+    assert drop[1] == "Alloy Plate"
+
     conn.close()
 
 
 def test_ingest_pipeline_idempotency(temp_db_path, sample_items):
     """Test that running the full ingest pipeline multiple times preserves exact search results and row counts."""
-    mock_response = MagicMock()
-    mock_response.json.return_value = sample_items
-    mock_response.raise_for_status.return_value = None
-
     db.init_db()
 
     # Ingest data twice
-    with patch("httpx.get", return_value=mock_response):
-        ingest.fetch_and_store_items()
-        ingest.fetch_and_store_items()
+    ingest.store_items(sample_items)
+    ingest.store_items(sample_items)
 
     conn = db.get_connection()
     cursor = conn.cursor()

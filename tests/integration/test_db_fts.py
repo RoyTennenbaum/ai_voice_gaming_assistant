@@ -61,3 +61,24 @@ def test_fts5_search_no_match(initialized_db, sample_items):
     results = cursor.execute(query, ("nonexistent_item_query",)).fetchall()
 
     assert len(results) == 0
+
+
+def test_fts5_drops_search_by_item_name(initialized_db):
+    """Test full-text search on the drops_fts table by item name."""
+    cursor = initialized_db.cursor()
+
+    cursor.execute(
+        "INSERT INTO drops_fts (item, place, rarity, drop_chance) VALUES (?, ?, ?, ?)",
+        ("Braton Prime Barrel", "Lith B1 Relic (Radiant)", "Common", 25.33),
+    )
+    cursor.execute(
+        "INSERT INTO drops_fts (item, place, rarity, drop_chance) VALUES (?, ?, ?, ?)",
+        ("Nikana Prime Blueprint", "Axi A1 Relic (Intact)", "Rare", 2.0),
+    )
+    initialized_db.commit()
+
+    query = "SELECT item, place FROM drops_fts WHERE drops_fts MATCH ?"
+    results = cursor.execute(query, ("Braton",)).fetchall()
+
+    assert len(results) == 1
+    assert results[0] == ("Braton Prime Barrel", "Lith B1 Relic (Radiant)")
