@@ -85,6 +85,8 @@ class AudioManager:
             if self.is_recording:
                 print(f"[{PTT_KEY}] PTT Released: Stopped recording.")
                 self.is_recording = False
+                if self._loop:
+                    self._loop.call_soon_threadsafe(self.input_queue.put_nowait, None)
 
     async def async_mic_stream(self):
         """Async generator that yields audio chunks when PTT is active."""

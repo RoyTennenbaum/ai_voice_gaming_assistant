@@ -21,7 +21,6 @@ class VoiceClient:
         # Configure system prompt, voice, and enable Google Search
         live_config = types.LiveConnectConfig(
             system_instruction=types.Content(parts=[types.Part.from_text(text=config.SYSTEM_PROMPT)]),
-            tools=[types.Tool(google_search=types.GoogleSearchTool())],
             speech_config=types.SpeechConfig(
                 voice_config=types.VoiceConfig(
                     prebuilt_voice_config=types.PrebuiltVoiceConfig(
@@ -44,36 +43,38 @@ class VoiceClient:
     async def _send_loop(self, session, audio_manager: AudioManager):
         """Reads mic input chunks from the AudioManager and sends them to Gemini."""
         async for chunk in audio_manager.async_mic_stream():
-            await session.send(
-                input={
-                    "realtime_input": {
-                        "media_chunks": [
-                            {
-                                "mime_type": "audio/pcm;rate=16000",
-                                "data": chunk
-                            }
-                        ]
-                    }
-                }
-            )
+            if chunk is None:
+                await session.send_realtime_input(audio_stream_end=True)
+            else:
+                await session.send_realtime_input(
+                    audio=types.Blob(
+                        data=chunk,
+                        mime_type=f"audio/pcm;rate={config.AUDIO_INPUT_SAMPLE_RATE}"
+                    )
+                )
 
     async def _receive_loop(self, session, audio_manager: AudioManager):
         """Receives events from Gemini: streams audio out and logs text to console."""
-        async for response in session.receive():
-            server_content = response.server_content
-            if server_content is not None:
-                model_turn = server_content.model_turn
-                if model_turn is not None:
-                    for part in model_turn.parts:
-                        # Play back audio chunks
-                        if part.inline_data:
-                            await audio_manager.play_audio(part.inline_data.data)
-                        # Print transcript to console
-                        if part.text:
-                            print(f"[Cephalon]: {part.text}", end="", flush=True)
-                            
-                # Note when model is interrupted or finished talking
-                if server_content.interrupted:
-                    print("\n[Cephalon Interrupted]")
-                if server_content.turn_complete:
-                    print() # Newline after turn
+        while True:
+            has_message = False
+            async for response in session.receive():
+                has_message = True
+                server_content = response.server_content
+                if server_content is not None:
+                    model_turn = server_content.model_turn
+                    if model_turn is not None:
+                        for part in model_turn.parts:
+                            # Play back audio chunks
+                            if part.inline_data:
+                                await audio_manager.play_audio(part.inline_data.data)
+                            # Print transcript to console
+                            if part.text:
+                                print(f"[Cephalon]: {part.text}", end="", flush=True)
+                                
+                    # Note when model is interrupted or finished talking
+                    if server_content.interrupted:
+                        print("\n[Cephalon Interrupted]")
+                    if server_content.turn_complete:
+                        print() # Newline after turn
+            if not has_message:
+                break

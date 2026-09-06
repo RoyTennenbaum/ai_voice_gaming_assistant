@@ -14,7 +14,9 @@ async def async_main():
     except asyncio.CancelledError:
         pass
     except Exception as e:
+        import traceback
         print(f"Error in voice session: {e}")
+        traceback.print_exc()
     finally:
         audio_manager.stop()
         print("Voice session ended.")
