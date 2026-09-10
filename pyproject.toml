@@ -9,11 +9,13 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "sounddevice>=0.4.6",
     "pynput>=1.7.6",
+    "pyqt6>=6.11.0",
+    "qasync>=0.28.0",
 ]
 
 [project.scripts]
-ingest = "ai_voice_gaming_assistant.data.ingest:main"
 app = "ai_voice_gaming_assistant.app:main"
+ingest = "ai_voice_gaming_assistant.data.ingest:main"
 
 [build-system]
 requires = ["hatchling"]
