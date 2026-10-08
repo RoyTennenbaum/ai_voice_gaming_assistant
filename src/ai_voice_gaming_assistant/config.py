@@ -42,6 +42,8 @@ AUDIO_OUTPUT_SAMPLE_RATE = 24000  # 24kHz PCM mono for Gemini Live audio playbac
 AUDIO_CHANNELS = 1                # Mono
 AUDIO_CHUNK_SIZE = 1024           # Samples per audio chunk
 PTT_KEY = os.getenv("PTT_KEY", "ctrl_r")  # Push-to-Talk activation hotkey
+AUDIO_INPUT_DEVICE = os.getenv("AUDIO_INPUT_DEVICE", None)    # Optional device index or name substring
+AUDIO_OUTPUT_DEVICE = os.getenv("AUDIO_OUTPUT_DEVICE", None)  # Optional device index or name substring
 
 # ==============================================================================
 # Q&A Model System Prompt

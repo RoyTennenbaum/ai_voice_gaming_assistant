@@ -5,15 +5,26 @@ import asyncio
 import qasync
 from PyQt6.QtWidgets import QApplication
 
-from ai_voice_gaming_assistant.interface.audio import AudioManager
+from ai_voice_gaming_assistant.interface.audio import AudioManager, AudioDeviceError
 from ai_voice_gaming_assistant.interface.voice_client import VoiceClient
 from ai_voice_gaming_assistant.interface.overlay import OverlayHUD
 
 async def async_main(hud: OverlayHUD):
-    audio_manager = AudioManager()
+    try:
+        audio_manager = AudioManager()
+    except AudioDeviceError as e:
+        print(f"\n[Initialization Error] {e}")
+        return
+
     voice_client = VoiceClient()
 
-    audio_manager.start()
+    try:
+        audio_manager.start()
+    except AudioDeviceError as e:
+        print(f"\n[Initialization Error] {e}")
+        audio_manager.stop()
+        return
+
     try:
         await voice_client.start_session(audio_manager, hud)
     except asyncio.CancelledError:
