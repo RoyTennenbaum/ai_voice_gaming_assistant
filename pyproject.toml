@@ -15,7 +15,6 @@ dependencies = [
 
 [project.scripts]
 app = "ai_voice_gaming_assistant.app:main"
-ingest = "ai_voice_gaming_assistant.data.ingest:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -28,4 +27,3 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
